@@ -1,3 +1,6 @@
+import ast
+import json
+
 from lxml import etree
 
 import requests
@@ -48,10 +51,16 @@ def get_data(reference:str):
     print(str + reference)
     html = etree.HTML(get(str + reference))
     link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
-    print(link)
+    # print(link)
     return link
 
+def get_bib(url:str,flie:str):
+    context = get(url)
+    with open(flie,'w') as f:
+        f.write(context)
 
-get_data(' On the Security of Public Key Protocols')
-get_data('Man-in-the-middle in Tunnelled Authentication Protocols')
-get_data("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time")
+if __name__ == "__main__":
+    list1 = get_data(' On the Security of Public Key Protocols')
+    # get_data('Man-in-the-middle in Tunnelled Authentication Protocols')
+    # get_data("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time")
+    get_bib(list1[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+'On the Security of Public Key Protocols')
