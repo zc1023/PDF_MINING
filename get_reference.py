@@ -1,5 +1,7 @@
 import ast
 import json
+import re
+import time
 
 from lxml import etree
 
@@ -37,6 +39,7 @@ def get_url(url:str):
     i = 0
     while (i < 2):
         try:
+            time.sleep(random.random())
             r = requests.get(url, headers={'User-agent': USER_AGENTS[random.randint(0, len(USER_AGENTS) - 1)]},
                              #proxies=PROXIES[random.randint(0, len(PROXIES) - 1)],
                              timeout=5)
@@ -48,23 +51,34 @@ def get_url(url:str):
     return ''
 
 def get_data(reference:str):
-    print(str + reference)
-    html = etree.HTML(get_url(str + reference))
-    link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
-    # print(link)
-    return link
+    # print(str + reference)
+    try:
+        html = etree.HTML(get_url(str + reference))
+        link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
+        # print(link)
+        return link
+    except:
+        return []
 
-def get_bib(url:str,flie:str):
+def get_bib(url:str,file:str):
     context = get_url(url)
-    with open(flie,'w') as f:
+
+    with open(file,'w') as f:
         f.write(context)
 
 def get(reference:str):
     list = get_data(reference)
+    pattern= "[^a-zA-Z0-9 ]"
+    reference = re.sub(pattern,'',reference)
     if list != []:
         get_bib(list[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+reference)
+        return True
+    return False
+
 if __name__ == "__main__":
-    get('On the Security of Public Key Protocols')
-    get('Man-in-the-middle in Tunnelled Authentication Protocols')
-    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time")
+    print(random.random())
+    print(get('On the Security of Public Key Protocols'),
+    get('Man-in-the-middle in Tunnelled Authentication Protocols'),
+    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time"),
+    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time"))
     # get_bib(list1[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+'On the Security of Public Key Protocols')

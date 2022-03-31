@@ -37,12 +37,21 @@ class PdfAnanlysis:
                         if 'REFERENCES' in x.get_text():
                             flag = True
                         if flag:
-                            str = str + x.get_text()
-            pattern = '\[.*\]'
+                            str = str + x.get_text().strip()
+            lista = re.split('\n', str)
+            # print(lista)
+            str = " ".join(lista)
+            # print(str)
+            pattern = '\[.\]|\[..\]|\[...\]'
+            # print(re.split(pattern,str))
             return re.split(pattern,str)
 
 
 if __name__ == '__main__':
     pdf = PdfAnanlysis('./data/paper/2987443.2987455.pdf')
+    # print(pdf.reference())
     for i in pdf.reference():
+        pass
         print(i)
+        # # print(list(i))
+        # print('\n')
