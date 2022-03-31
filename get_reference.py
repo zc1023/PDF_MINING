@@ -33,7 +33,7 @@ PROXIES = [
     {'ip_port': '122.224.249.122:8088', 'user_pass': ''},
 ]
 str = 'https://dblp.org/search?q='
-def get(url:str):
+def get_url(url:str):
     i = 0
     while (i < 2):
         try:
@@ -49,18 +49,22 @@ def get(url:str):
 
 def get_data(reference:str):
     print(str + reference)
-    html = etree.HTML(get(str + reference))
+    html = etree.HTML(get_url(str + reference))
     link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
     # print(link)
     return link
 
 def get_bib(url:str,flie:str):
-    context = get(url)
+    context = get_url(url)
     with open(flie,'w') as f:
         f.write(context)
 
+def get(reference:str):
+    list = get_data(reference)
+    if list != []:
+        get_bib(list[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+reference)
 if __name__ == "__main__":
-    list1 = get_data(' On the Security of Public Key Protocols')
-    # get_data('Man-in-the-middle in Tunnelled Authentication Protocols')
-    # get_data("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time")
-    get_bib(list1[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+'On the Security of Public Key Protocols')
+    get('On the Security of Public Key Protocols')
+    get('Man-in-the-middle in Tunnelled Authentication Protocols')
+    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time")
+    # get_bib(list1[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+'On the Security of Public Key Protocols')
