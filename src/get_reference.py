@@ -1,12 +1,10 @@
-import ast
-import json
+import os.path
 import re
 import time
-
 from lxml import etree
-
 import requests
 import random
+from src import PDFanalysis
 
 USER_AGENTS = [
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
@@ -34,7 +32,7 @@ PROXIES = [
     {'ip_port': '122.96.59.104:80', 'user_pass': ''},
     {'ip_port': '122.224.249.122:8088', 'user_pass': ''},
 ]
-str = 'https://dblp.org/search?q='
+dblp = 'https://dblp.org/search?q='
 def get_url(url:str):
     i = 0
     while (i < 2):
@@ -51,9 +49,8 @@ def get_url(url:str):
     return ''
 
 def get_data(reference:str):
-    # print(str + reference)
     try:
-        html = etree.HTML(get_url(str + reference))
+        html = etree.HTML(get_url(dblp+ reference))
         link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
         # print(link)
         return link
@@ -62,23 +59,27 @@ def get_data(reference:str):
 
 def get_bib(url:str,file:str):
     context = get_url(url)
-
     with open(file,'w') as f:
         f.write(context)
 
-def get(reference:str):
-    list = get_data(reference)
-    pattern= "[^a-zA-Z0-9 ]"
-    reference = re.sub(pattern,'',reference)
-    if list != []:
-        get_bib(list[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+reference)
-        return True
-    return False
+def get_reference(paper:str):
+    if not os.path.exists('./data/reference/'+paper[0:-4]+'/'):
+        os.makedirs('./data/reference/'+paper[0:-4]+'/')
+    pdf = PDFanalysis.PdfAnanlysis('./data/paper/'+paper)
+    count=0
+    for i in pdf.reference():
+        # print(i)
+        list = i.split('.')
+        for reference in list:
+            if reference.count(" ") > 3:
+
+                list = get_data(reference)
+                pattern= "[^a-zA-Z0-9 ]"
+                reference = re.sub(pattern,'',reference)
+                if list != []:
+                    get_bib(list[0].replace('static?view=bibtex','bib?param=1'),'./data/reference/'+paper[0:-4]+'/'+reference)
+                    count+=1
+    return count
 
 if __name__ == "__main__":
-    print(random.random())
-    print(get('On the Security of Public Key Protocols'),
-    get('Man-in-the-middle in Tunnelled Authentication Protocols'),
-    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time"),
-    get("This opens the door to continuous measurements worldwide, with the ability to see how various types of violations evolve over time"))
-    # get_bib(list1[0].replace('html?view=bibtex','bib?param=1'),'./data/reference/'+'On the Security of Public Key Protocols')
+    pass

@@ -1,23 +1,3 @@
-import PDFanalysis
-import get_reference
-pdf = PDFanalysis.PdfAnanlysis('./data/paper/2987443.2987455.pdf')
-result=[]
+from src import get_reference
 
-# for i in pdf.reference():
-#     print(i)
-co= 0
-for i in pdf.reference():
-    # print(i)
-    flag = False
-    # if ":/" not in i :
-    list = i.split('.')
-    for j in list :
-        if j.count(" ") > 3:
-            if get_reference.get(j):
-                flag = True
-                co+=1
-    if flag:
-        print(i)
-        result.append(i)
-# print(result)
-print(co)
+print(get_reference.get_reference('ndss2021_3B-2_24008_paper.pdf'))
