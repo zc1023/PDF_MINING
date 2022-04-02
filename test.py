@@ -1,29 +1,15 @@
-from flask import Flask, render_template, request
-from werkzeug.utils import secure_filename
-
 import os
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'data/'
-@app.route('/')
-def index():
-    return  render_template("index.html")
-@app.route('/upload')
-def upload_file():
-    return render_template("upload.html")
+from src import get_reference
+# get_reference.get_reference('ndss2021_3B-2_24008_paper.pdf')
+for root, dirs, files in os.walk('data/paper'):
+    print(root)
+    print(dirs)
+    print(files)
+# get_reference.mulit_get_reference('ndss2021_3B-2_24008_paper.pdf',threadcont= 20 )
 
-@app.route('/uploader',methods=['GET','POST'])
-def uploader():
-    if request.method == 'POST':
-        f = request.files['file']
-        print(request.files)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-
-        return 'file uploaded successfully'
-
-    else:
-
-        return render_template('upload.html')
-
-if __name__ == '__main__':
-   app.run(debug=True)
+# with open("./data/reference/ndss2021_3B-2_24008_paper/ Yin Zhang and Vern Paxson","r") as f:
+#     str = f.read()
+#     print(str)
+#     list = f.readlines()
+#     print(list)

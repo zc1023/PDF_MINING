@@ -1,11 +1,12 @@
 import os.path
 import re
+import threading
 import time
 from lxml import etree
 import requests
 import random
 from src import PDFanalysis
-
+from collections import deque
 USER_AGENTS = [
     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)",
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; Acoo Browser; SLCC1; .NET CLR 2.0.50727; Media Center PC 5.0; .NET CLR 3.0.04506)",
@@ -62,24 +63,49 @@ def get_bib(url:str,file:str):
     with open(file,'w') as f:
         f.write(context)
 
-def get_reference(paper:str):
+def get_reference(dp,paper):
+    while dp:
+        reference  = dp.pop()
+        list = get_data(reference)
+        pattern = "[^a-zA-Z0-9. ]"
+        reference = re.sub(pattern, '', reference)
+        if list != []:
+            get_bib(list[0].replace('html?view=bibtex', 'bib?param=1'), './data/reference/' + paper[0:-4] + '/' + reference)
+
+class my_thread(threading.Thread):
+    def __init__(self,paper,dp):
+        threading.Thread.__init__(self)
+        self.paper = paper
+        self.dp = dp
+    def run(self):
+        print('hallo')
+        get_reference(self.dp,self.paper)
+
+def mulit_get_reference(paper:str,threadcont = 10):
     if not os.path.exists('./data/reference/'+paper[0:-4]+'/'):
         os.makedirs('./data/reference/'+paper[0:-4]+'/')
     pdf = PDFanalysis.PdfAnanlysis('./data/paper/'+paper)
-    count=0
+    references = []
     for i in pdf.reference():
         # print(i)
         list = i.split('.')
-        for reference in list:
-            if reference.count(" ") > 3:
+        for j in list:
+            if j.count(" ") > 5:
+                references.append(j)
+    dp = deque(references)
 
-                list = get_data(reference)
-                pattern= "[^a-zA-Z0-9 ]"
-                reference = re.sub(pattern,'',reference)
-                if list != []:
-                    get_bib(list[0].replace('static?view=bibtex','bib?param=1'),'./data/reference/'+paper[0:-4]+'/'+reference)
-                    count+=1
-    return count
+    threads=[]
+    for i in range(threadcont):
+        thread = my_thread(paper,dp)
+        thread.start()
+        threads.append(thread)
+    for thread in threads:
+        thread.join()
+
+
+
+
+
 
 if __name__ == "__main__":
-    pass
+    get_reference('ndss2021_3B-2_24008_paper.pdf')
