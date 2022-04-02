@@ -37,12 +37,13 @@ dblp = 'https://dblp.org/search?q='
 def get_url(url:str):
     i = 0
     while (i < 2):
+        # double try to reduce the impact of network fluctuations
         try:
             time.sleep(random.random())
+            # random dormancy against the anti-repilte policy
             r = requests.get(url, headers={'User-agent': USER_AGENTS[random.randint(0, len(USER_AGENTS) - 1)]},
-                             #proxies=PROXIES[random.randint(0, len(PROXIES) - 1)],
+                             #proxies=PROXIES[random.randint(0, len(PROXIES) - 1)], #free proxies,unstable and unnecessary
                              timeout=5)
-            # print(r.status_code)
             if r.status_code == 200:
                 return r.text
         except:
@@ -53,12 +54,13 @@ def get_data(reference:str):
     try:
         html = etree.HTML(get_url(dblp+ reference))
         link = html.xpath('//nav[@class = "publ"]/ul/li[2]/div[1]/a/@href')
-        # print(link)
+        # got the reference address
         return link
     except:
         return []
 
 def get_bib(url:str,file:str):
+    # save bib
     context = get_url(url)
     with open(file,'w') as f:
         f.write(context)
@@ -70,6 +72,7 @@ def get_reference(dp,paper):
         pattern = "[^a-zA-Z0-9. ]"
         reference = re.sub(pattern, '', reference)
         if list != []:
+            # remove '.pdf' in flie name,the download address is only different from the page suffix
             get_bib(list[0].replace('html?view=bibtex', 'bib?param=1'), './data/reference/' + paper[0:-4] + '/' + reference)
 
 class my_thread(threading.Thread):
@@ -78,19 +81,20 @@ class my_thread(threading.Thread):
         self.paper = paper
         self.dp = dp
     def run(self):
-        print('hallo')
         get_reference(self.dp,self.paper)
 
+# use threat to save time
 def mulit_get_reference(paper:str,threadcont = 10):
     if not os.path.exists('./data/reference/'+paper[0:-4]+'/'):
         os.makedirs('./data/reference/'+paper[0:-4]+'/')
     pdf = PDFanalysis.PdfAnanlysis('./data/paper/'+paper)
     references = []
     for i in pdf.reference():
-        # print(i)
+
         list = i.split('.')
         for j in list:
             if j.count(" ") > 5:
+                # remove impossibe reference
                 references.append(j)
     dp = deque(references)
 
@@ -101,10 +105,6 @@ def mulit_get_reference(paper:str,threadcont = 10):
         threads.append(thread)
     for thread in threads:
         thread.join()
-
-
-
-
 
 
 if __name__ == "__main__":

@@ -42,7 +42,6 @@ def uploader():
         return redirect(url_for('index'))
 
     else:
-
         return render_template('upload.html')
 
 @app.route('/reference/<paper>/<reference>')
